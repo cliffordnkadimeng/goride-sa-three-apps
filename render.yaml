@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: goride-sa
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ENABLE_DEMO_MODE
+        value: 'false'
+      - key: SUPABASE_URL
+        value: https://eihcsvgajcjykpwbblhz.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: sb_publishable_tuJ5MyHRYRd7EPpIg85GWQ_afUmF4Ue
