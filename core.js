@@ -1,0 +1,13 @@
+export const role = document.body.dataset.role;
+export const money = (v) => new Intl.NumberFormat('en-ZA', {style:'currency',currency:'ZAR',maximumFractionDigits:0}).format(Number(v)||0);
+export const esc = (v) => String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export const status = (v) => `<span class="pill ${v==='requested'||v==='pending'?'wait':v==='cancelled'||v==='rejected'?'bad':''}">${esc(String(v).replaceAll('_',' '))}</span>`;
+export const el = id => document.getElementById(id);
+export const notice = (msg,bad=false) => { const n=el('toast');n.textContent=msg;n.className='toast'+(bad?' error':'');setTimeout(()=>n.className='toast hidden',4300); };
+export async function api(url,options={}) {const res=await fetch(url,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),'x-demo-role':role,...options.headers}}); const data=await res.json();if(!res.ok)throw Error(data.error||'Request failed');return data;}
+export const load=()=>api('/api/demo/state');
+export const act=async(payload)=>{const r=await api('/api/demo/action',{method:'POST',body:JSON.stringify(payload)});notice(r.message||'Updated');return r;};
+export const bind = (selector,callback) => document.querySelectorAll(selector).forEach(node=>node.addEventListener('click',()=>callback(node)));
+export const fmtDate=(d)=>new Date(d).toLocaleString('en-ZA',{dateStyle:'medium',timeStyle:'short'});
+export const skeleton = (role,heading,subtitle,nav) => {document.body.innerHTML=`<div class="shell"><aside><div class="brand"><span class="brand-mark">G</span>GoRide <b>SA</b></div><nav class="sidebar-nav">${nav.map(([label,id])=>`<a href="#${id}">${esc(label)}</a>`).join('')}</nav><div class="sidebar-foot">${role.toUpperCase()} APP<br>South Africa · Demo sandbox</div></aside><main><header class="top"><div><div class="eyebrow">GORIDE SA / ${esc(role)}</div><h1>${esc(heading)}</h1><div class="muted">${esc(subtitle)}</div></div><div class="header-right"><a class="toplink" href="/passenger/">Passenger</a><a class="toplink" href="/driver/">Driver</a><a class="toplink" href="/admin/">Admin</a></div></header><div class="notice">⚠️ <span><strong>DEMO SANDBOX — NOT LIVE DISPATCH.</strong> All three apps share an in-memory test backend. Data resets when the server restarts. No real customers, drivers, payments, or admin authentication.</span></div><div id="app"></div></main></div><div id="toast" class="toast hidden" role="status"></div>`;};
+export const refreshEvery=(fn)=>{setInterval(()=>{if(!document.hidden)fn().catch(e=>notice(e.message,true));},4000)};
